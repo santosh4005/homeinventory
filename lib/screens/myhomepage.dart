@@ -34,7 +34,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     Icon(Icons.list),
-                    Text("My Inventory"),
+                    Text("My Inventory!"),
                   ],
                 ),
               ), 

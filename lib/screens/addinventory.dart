@@ -16,7 +16,7 @@ class _AddInventoryState extends State<AddInventory> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Add to Inventory man"),
+        title: Text("Add to Inventory"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
