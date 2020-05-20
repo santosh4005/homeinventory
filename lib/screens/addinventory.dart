@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class AddInventory extends StatefulWidget {
+class ScreenAddInventory extends StatefulWidget {
   static const String name = "/addinventory";
 
   @override
-  _AddInventoryState createState() => _AddInventoryState();
+  _ScreenAddInventoryState createState() => _ScreenAddInventoryState();
 }
 
-class _AddInventoryState extends State<AddInventory> {
+class _ScreenAddInventoryState extends State<ScreenAddInventory> {
   final _form = GlobalKey<FormState>();
   final _quantityFocusNode = FocusNode();
   final _shelfNameFocusNode = FocusNode();
