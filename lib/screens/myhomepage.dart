@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:home_inventory/models/usermodel.dart';
-import 'package:home_inventory/providers/inventoryprovider.dart';
+import 'package:home_inventory/models/usermodel.dart'; 
 import 'package:home_inventory/screens/addinventory.dart';
 import 'package:home_inventory/screens/inventory.dart';
 import 'package:home_inventory/services.dart/auth.dart';
