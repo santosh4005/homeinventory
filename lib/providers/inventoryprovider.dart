@@ -42,32 +42,57 @@ class ProviderInventory with ChangeNotifier {
       var inventory = await Firestore.instance
           .collection("inventory")
           .where("createdBy", isEqualTo: loggedInUser.uid)
+          .orderBy("createdOn", descending: true)
           .getDocuments();
 
-      _items.clear();
       inventory.documents.forEach((element) {
         _items.add(ModelInventoryItem(
-          createdBy: element.data["createdBy"],
-          description: element.data["description"],
-          id: element.documentID,
-          quantity: element.data["quantity"],
-          shelfName: element.data["shelfName"],
-          title: element.data["title"],
-        ));
+            createdBy: element.data["createdBy"],
+            description: element.data["description"],
+            id: element.documentID,
+            quantity: element.data["quantity"],
+            shelfName: element.data["shelfName"],
+            title: element.data["title"],
+            imageUrl: element.data["imageUrl"],
+            createdOn: (element.data["createdOn"] as Timestamp).toDate()));
       });
       notifyListeners();
     }
   }
 
-  Future<void> addInventory(String title, String shelfName, String quantity,
-      String description) async {
+  Future<void> updateInventory(ModelInventoryItem inventoryItem) async {
+    if (inventoryItem.id.isNotEmpty) {
+      await Firestore.instance
+          .collection("inventory")
+          .document(inventoryItem.id)
+          .setData({
+        "title": inventoryItem.title,
+        "shelfName": inventoryItem.shelfName,
+        "quantity": inventoryItem.quantity,
+        "description": inventoryItem.description,
+        "createdOn": inventoryItem.createdOn,
+        "createdBy": inventoryItem.createdBy,
+        "imageUrl": inventoryItem.imageUrl,
+      });
+
+      final prodIndex =
+          _items.indexWhere((prod) => prod.id == inventoryItem.id);
+      _items[prodIndex] = inventoryItem;
+    }
+  }
+
+  Future<ModelInventoryItem> addInventory(String title, String shelfName,
+      String quantity, String description) async {
     var loggedInUser = await FirebaseAuth.instance.currentUser();
+
+    var createdon = DateTime.now();
 
     var addedInventory = await Firestore.instance.collection("inventory").add({
       "title": title,
       "shelfName": shelfName,
       "quantity": quantity,
       "description": description,
+      "createdOn": createdon,
       "createdBy": loggedInUser.uid,
     });
 
@@ -77,11 +102,13 @@ class ProviderInventory with ChangeNotifier {
       quantity: quantity,
       shelfName: shelfName,
       title: title,
+      createdOn: createdon,
       id: addedInventory.documentID,
     );
 
     _items.add(newInventoryItem);
     notifyListeners();
+    return newInventoryItem;
   }
 
   void removeItemFromInventory(int index) {

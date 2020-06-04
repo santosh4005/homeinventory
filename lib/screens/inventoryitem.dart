@@ -18,7 +18,7 @@ class ScreenInventoryItem extends StatelessWidget {
       body: Container(
           decoration: BoxDecoration(
               gradient: LinearGradient(
-                  colors: [Colors.purple, Colors.white],
+                  colors: [Theme.of(context).primaryColor, Colors.white],
                   begin: Alignment.topRight,
                   end: Alignment.bottomLeft)),
           child: SafeArea(

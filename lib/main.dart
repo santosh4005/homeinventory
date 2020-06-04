@@ -13,23 +13,22 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  final primaryColor = Colors.pink;
-  final accentColor = Colors.purple;
+  final primaryColor =Colors.deepPurple;
+  final accentColor = Colors.white;
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        
+      providers: [        
         ChangeNotifierProvider.value(value: ProviderInventory())],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Home Inventory',
-        theme: ThemeData(
+        theme: ThemeData(  
           primarySwatch: primaryColor,
           backgroundColor: primaryColor,
           accentColor: accentColor,
-          accentColorBrightness: Brightness.dark,
+          // accentColorBrightness: Brightness.dark,
           buttonTheme: ButtonTheme.of(context).copyWith(
             buttonColor: primaryColor,
             textTheme: ButtonTextTheme.primary,

@@ -22,7 +22,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
         backgroundColor: Colors.transparent,
-         elevation: 0,
+        elevation: 0,
       ),
       drawer: Drawer(
         child: Column(
@@ -46,12 +46,12 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Container(
         decoration: BoxDecoration(
-            gradient: LinearGradient(
-                colors: [ Colors.purple, Colors.white],
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft)),
+            gradient: LinearGradient(colors: [
+          Theme.of(context).primaryColor,
+          Colors.white,
+        ], begin: Alignment.topRight, end: Alignment.bottomLeft)),
         child: SafeArea(
-                  child: Padding(
+          child: Padding(
             padding: EdgeInsets.all(20.0),
             child: GridView(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -82,8 +82,16 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
-        onPressed: () =>
-            {Navigator.of(context).pushNamed(ScreenAddInventory.name)},
+        onPressed: () => {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) {
+              return ScreenAddInventory(
+                editItem: null,
+                isEditMode: false,
+              );
+            },
+          ))
+        },
         tooltip: 'Increment',
         child: Icon(Icons.add),
       ),

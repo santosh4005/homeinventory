@@ -5,7 +5,13 @@ class SplashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       // backgroundColor: Theme.of(context).backgroundColor,
-      body: Center(
+      body: Container(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [
+          Theme.of(context).primaryColor,
+          Theme.of(context).accentColor,
+          Colors.white
+        ])),
         child: Text("loading"),
       ),
     );
