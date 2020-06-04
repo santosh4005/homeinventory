@@ -4,8 +4,34 @@ import 'package:home_inventory/providers/inventoryprovider.dart';
 import 'package:home_inventory/screens/inventoryitem.dart';
 import 'package:provider/provider.dart';
 
-class ScreenInventory extends StatelessWidget {
+class ScreenInventory extends StatefulWidget {
   static const String name = "/inventory";
+
+  @override
+  _ScreenInventoryState createState() => _ScreenInventoryState();
+}
+
+class _ScreenInventoryState extends State<ScreenInventory> {
+  var _isInit = true;
+  var _isLoading = false;
+
+  @override
+  void didChangeDependencies() {
+    if (_isInit) {
+      setState(() {
+        _isLoading = true;
+      });
+      Provider.of<ProviderInventory>(context, listen: false)
+          .fetchAndSetInventory()
+          .then((_) {
+        setState(() {
+          _isLoading = false;
+        });
+      });
+    }
+    _isInit = false;
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +39,10 @@ class ScreenInventory extends StatelessWidget {
     var itemsList = provider.items;
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
         title: Text("My Inventory (${itemsList.length})"),
         actions: <Widget>[
           IconButton(
@@ -24,61 +53,71 @@ class ScreenInventory extends StatelessWidget {
           )
         ],
       ),
-      body: ListView.separated(
-          itemBuilder: (ctx, index) {
-            return Dismissible(
-              confirmDismiss: (direction) => showDialog(
-                  context: ctx,
-                  child: AlertDialog(
-                    actions: <Widget>[
-                      RaisedButton(
-                        child: Text("Cancel"),
-                        onPressed: () => Navigator.of(context).pop(false),
-                      ),
-                      RaisedButton(
-                        child: Text("OK"),
-                        onPressed: () => Navigator.of(context).pop(true),
-                      )
-                    ],
-                    title: Text("Hmmm...."),
-                  )),
-              direction: DismissDirection.endToStart,
-              key: ValueKey(itemsList[index].id),
-              onDismissed: (direction) {
-                provider.removeItemFromInventory(index);
-                Scaffold.of(ctx).hideCurrentSnackBar();
-                Scaffold.of(ctx).showSnackBar(SnackBar(
-                  content:
-                      Text("Deleted ${itemsList[index].title} from the list"),
-                ));
+      body: Container(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+                colors: [Colors.purple, Colors.white],
+                begin: Alignment.topRight,
+                end: Alignment.bottomLeft)),
+        child: SafeArea(
+                  child: ListView.separated(
+              itemBuilder: (ctx, index) {
+                return Dismissible(
+                  confirmDismiss: (direction) => showDialog(
+                      context: ctx,
+                      child: AlertDialog(
+                        actions: <Widget>[
+                          RaisedButton(
+                            child: Text("Cancel"),
+                            onPressed: () => Navigator.of(context).pop(false),
+                          ),
+                          RaisedButton(
+                            child: Text("OK"),
+                            onPressed: () => Navigator.of(context).pop(true),
+                          )
+                        ],
+                        title: Text("Hmmm...."),
+                      )),
+                  direction: DismissDirection.endToStart,
+                  key: ValueKey(itemsList[index].id),
+                  onDismissed: (direction) {
+                    provider.removeItemFromInventory(index);
+                    Scaffold.of(ctx).hideCurrentSnackBar();
+                    Scaffold.of(ctx).showSnackBar(SnackBar(
+                      content:
+                          Text("Deleted ${itemsList[index].title} from the list"),
+                    ));
+                  },
+                  background: Container(
+                    alignment: Alignment.centerRight,
+                    color: Colors.red,
+                    child: Icon(
+                      Icons.delete_forever,
+                      color: Colors.white,
+                      size: 36.0,
+                    ),
+                  ),
+                  child: ListTile(
+                    title: Text(itemsList[index].title),
+                    subtitle: Text(itemsList[index].shelfName),
+                    trailing: Text(itemsList[index].quantity.toString()),
+                    onTap: () {
+                      Navigator.of(context)
+                          .push(MaterialPageRoute(builder: (ctx) {
+                        return ScreenInventoryItem(
+                          modelInventoryItem: itemsList[index],
+                        );
+                      }));
+                    },
+                  ),
+                );
               },
-              background: Container(
-                alignment: Alignment.centerRight,
-                color: Colors.red,
-                child: Icon(
-                  Icons.delete_forever,
-                  color: Colors.white,
-                  size: 36.0,
-                ),
-              ),
-              child: ListTile(
-                title: Text(itemsList[index].title),
-                subtitle: Text(itemsList[index].shelfName),
-                trailing: Text(itemsList[index].quantity.toString()),
-                onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(builder: (ctx) {
-                    return ScreenInventoryItem(
-                      modelInventoryItem: itemsList[index],
-                    );
-                  }));
-                },
-              ),
-            );
-          },
-          itemCount: itemsList.length,
-          separatorBuilder: (ctx, i) {
-            return Divider();
-          }),
+              itemCount: itemsList.length,
+              separatorBuilder: (ctx, i) {
+                return Divider();
+              }),
+        ),
+      ),
     );
   }
 }

@@ -9,10 +9,20 @@ class ScreenInventoryItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
         title: Text(modelInventoryItem.title),
       ),
-      body: Center(child: Text(modelInventoryItem.description)),
+      body: Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [Colors.purple, Colors.white],
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft)),
+          child: SafeArea(
+              child: Center(child: Text(modelInventoryItem.description)))),
     );
   }
 }

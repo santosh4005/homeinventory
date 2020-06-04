@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "843821219805",
+    "firebase_url": "https://home-inventory-b83da.firebaseio.com",
+    "project_id": "home-inventory-b83da",
+    "storage_bucket": "home-inventory-b83da.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:843821219805:android:cffc9568aff729eb668034",
+        "android_client_info": {
+          "package_name": "com.example.home_inventory"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "843821219805-4plskqjommr7v9fk8j9au89nhe202snn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDF7c5RgMQKT12GOkFfF5QRnQGGNmK2_ek"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "843821219805-4plskqjommr7v9fk8j9au89nhe202snn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
