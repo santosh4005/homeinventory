@@ -40,7 +40,7 @@ class _InventoryImagePickerState extends State<InventoryImagePicker> {
           backgroundColor: Colors.grey,
           backgroundImage: _image != null
               ? FileImage(_image)
-              : widget.imageUrl == null
+              : widget.imageUrl == null || widget.imageUrl.isEmpty
                   ? AssetImage('assets/images/original.png')
                   : NetworkImage(widget.imageUrl),
         ),

@@ -6,7 +6,10 @@ import 'package:home_inventory/screens/inventoryitem.dart';
 import 'package:provider/provider.dart';
 
 class ScreenInventory extends StatefulWidget {
-  static const String name = "/inventory";
+  // static const String name = "/inventory";
+
+  final String tag;
+  ScreenInventory(this.tag);
 
   @override
   _ScreenInventoryState createState() => _ScreenInventoryState();
@@ -17,17 +20,15 @@ class _ScreenInventoryState extends State<ScreenInventory> {
   var _isLoading = false;
 
   @override
-  void didChangeDependencies() {
+  void didChangeDependencies() async {
     if (_isInit) {
       setState(() {
         _isLoading = true;
       });
-      Provider.of<ProviderInventory>(context, listen: false)
-          .fetchAndSetInventory()
-          .then((_) {
-        setState(() {
-          _isLoading = false;
-        });
+      await Provider.of<ProviderInventory>(context, listen: false)
+          .fetchAndSetInventory();
+      setState(() {
+        _isLoading = false;
       });
     }
     _isInit = false;
@@ -37,7 +38,14 @@ class _ScreenInventoryState extends State<ScreenInventory> {
   @override
   Widget build(BuildContext context) {
     var provider = Provider.of<ProviderInventory>(context);
-    var itemsList = provider.items;
+
+    List<ModelInventoryItem> itemsList = [];
+    if (widget.tag == "") {
+      itemsList = provider.items;
+    } else {
+      itemsList =
+          provider.items.where((element) => element.tag == widget.tag).toList();
+    }
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -54,6 +62,22 @@ class _ScreenInventoryState extends State<ScreenInventory> {
           )
         ],
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) {
+              return ScreenAddInventory(
+                tagValue: widget.tag,
+                editItem: null,
+                isEditMode: false,
+              );
+            },
+          ))
+        },
+        tooltip: 'Increment',
+        child: Icon(Icons.add),
+      ),
       body: Container(
         decoration: BoxDecoration(
             gradient: LinearGradient(colors: [
@@ -63,77 +87,86 @@ class _ScreenInventoryState extends State<ScreenInventory> {
         child: SafeArea(
           child: _isLoading
               ? Center(child: CircularProgressIndicator())
-              : ListView.separated(
-                  itemBuilder: (ctx, index) {
-                    return Dismissible(
-                      confirmDismiss: (direction) => showDialog(
-                          context: ctx,
-                          child: AlertDialog(
-                            actions: <Widget>[
-                              RaisedButton(
-                                child: Text("Cancel"),
-                                onPressed: () =>
-                                    Navigator.of(context).pop(false),
-                              ),
-                              RaisedButton(
-                                child: Text("OK"),
-                                onPressed: () =>
-                                    Navigator.of(context).pop(true),
-                              )
-                            ],
-                            title: Text("Hmmm...."),
-                          )),
-                      direction: DismissDirection.endToStart,
-                      key: ValueKey(itemsList[index].id),
-                      onDismissed: (direction) {
-                        provider.removeItemFromInventory(index);
-                        Scaffold.of(ctx).hideCurrentSnackBar();
-                        Scaffold.of(ctx).showSnackBar(SnackBar(
-                          content: Text(
-                              "Deleted ${itemsList[index].title} from the list"),
-                        ));
-                      },
-                      background: Container(
-                        alignment: Alignment.centerRight,
-                        color: Colors.red,
-                        child: Icon(
-                          Icons.delete_forever,
-                          color: Colors.white,
-                          size: 36.0,
-                        ),
-                      ),
-                      child: ListTile(
-                        leading: itemsList[index].imageUrl == null
-                            ? CircleAvatar(
-                                child: Icon(Icons.ac_unit),
-                              )
-                            : CircleAvatar(
-                                backgroundImage:
-                                    NetworkImage(itemsList[index].imageUrl),
-                              ),
-                        title: Text(itemsList[index].title),
-                        subtitle: Text(itemsList[index].shelfName),
-                        trailing: Text(itemsList[index].quantity.toString()),
-                        onTap: () {
-                          Navigator.of(context)
-                              .push(MaterialPageRoute(builder: (ctx) {
-                            return ScreenAddInventory(
-                              editItem: itemsList[index],
-                              isEditMode: true,
-                            );
+              : RefreshIndicator(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  onRefresh: () =>
+                      provider.fetchAndSetInventory(hardrefresh: true),
+                  child: ListView.separated(
+                      itemBuilder: (ctx, index) {
+                        return Dismissible(
+                          confirmDismiss: (direction) => showDialog(
+                              context: ctx,
+                              child: AlertDialog(
+                                actions: <Widget>[
+                                  RaisedButton(
+                                    child: Text("Cancel"),
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(false),
+                                  ),
+                                  RaisedButton(
+                                    child: Text("OK"),
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(true),
+                                  )
+                                ],
+                                title: Text("Hmmm...."),
+                              )),
+                          direction: DismissDirection.endToStart,
+                          key: ValueKey(itemsList[index].id),
+                          onDismissed: (direction) {
+                            provider.removeItemFromInventory(index);
+                            Scaffold.of(ctx).hideCurrentSnackBar();
+                            Scaffold.of(ctx).showSnackBar(SnackBar(
+                              content: Text(
+                                  "Deleted ${itemsList[index].title} from the list"),
+                            ));
+                          },
+                          background: Container(
+                            alignment: Alignment.centerRight,
+                            color: Colors.red,
+                            child: Icon(
+                              Icons.delete_forever,
+                              color: Colors.white,
+                              size: 36.0,
+                            ),
+                          ),
+                          child: ListTile(
+                            leading: itemsList[index].imageUrl == null
+                                ? CircleAvatar(
+                                    child: Icon(Icons.ac_unit),
+                                  )
+                                : CircleAvatar(
+                                    backgroundImage:
+                                        NetworkImage(itemsList[index].imageUrl),
+                                  ),
+                            title: Text(itemsList[index].title),
+                            subtitle: Text(itemsList[index].tag +
+                                ": " +
+                                itemsList[index].shelfName),
+                            trailing:
+                                Text(itemsList[index].quantity.toString()),
+                            onTap: () {
+                              Navigator.of(context)
+                                  .push(MaterialPageRoute(builder: (ctx) {
+                                return ScreenAddInventory(
+                                  tagValue: itemsList[index].tag,
+                                  editItem: itemsList[index],
+                                  isEditMode: true,
+                                );
 
-                            // return ScreenInventoryItem(
-                            //   modelInventoryItem: itemsList[index],
-                            // );
-                          }));
-                        },
-                      ),
-                    );
-                  },
-                  itemCount: itemsList.length,
-                  separatorBuilder: (ctx, i) {
-                    return Divider();
-                  }),
+                                // return ScreenInventoryItem(
+                                //   modelInventoryItem: itemsList[index],
+                                // );
+                              }));
+                            },
+                          ),
+                        );
+                      },
+                      itemCount: itemsList.length,
+                      separatorBuilder: (ctx, i) {
+                        return Divider();
+                      }),
+                ),
         ),
       ),
     );

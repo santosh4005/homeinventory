@@ -2,7 +2,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:home_inventory/models/inventoryitem.dart';
 import 'package:home_inventory/providers/inventoryprovider.dart';
-import 'package:home_inventory/screens/inventory.dart';
 import 'package:home_inventory/widgets/inventoryimagepicker.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
@@ -10,9 +9,10 @@ import 'dart:io';
 class ScreenAddInventory extends StatefulWidget {
   final bool isEditMode;
   final ModelInventoryItem editItem;
-  ScreenAddInventory({this.isEditMode, this.editItem});
+  final String tagValue;
+  ScreenAddInventory({this.isEditMode, this.editItem, this.tagValue});
 
-  static const String name = "/addinventory";
+  // static const String name = "/addinventory";
 
   @override
   _ScreenAddInventoryState createState() => _ScreenAddInventoryState();
@@ -25,11 +25,13 @@ class _ScreenAddInventoryState extends State<ScreenAddInventory> {
   final _descriptionFocusNode = FocusNode();
   File _inventoryImageFile;
   String _imageUrl = "";
+  bool _isSubmitting = false;
 
   final _titleController = TextEditingController();
   final _quantityController = TextEditingController();
   final _shelfController = TextEditingController();
   final _descriptionController = TextEditingController();
+  String _currentTagValue = "";
 
   @override
   void initState() {
@@ -40,6 +42,9 @@ class _ScreenAddInventoryState extends State<ScreenAddInventory> {
       _shelfController.text = widget.editItem.shelfName;
       _descriptionController.text = widget.editItem.description;
       _imageUrl = widget.editItem == null ? "" : widget.editItem.imageUrl;
+      _currentTagValue = widget.editItem.tag;
+    } else {
+      _currentTagValue = widget.tagValue == "" ? "Generic" : widget.tagValue;
     }
   }
 
@@ -59,6 +64,43 @@ class _ScreenAddInventoryState extends State<ScreenAddInventory> {
       inventoryitem.imageUrl = await imgRef.getDownloadURL();
       await Provider.of<ProviderInventory>(context, listen: false)
           .updateInventory(inventoryitem);
+    }
+  }
+
+  Future<void> _submitForm() async {
+    final isValid = _form.currentState.validate();
+    FocusScope.of(context).unfocus();
+    if (isValid) {
+      var provider = Provider.of<ProviderInventory>(context, listen: false);
+      setState(() {
+        _isSubmitting = true;
+      });
+      if (widget.editItem == null) {
+        var inventoryitem = await provider.addInventory(
+            _titleController.text,
+            _shelfController.text,
+            _quantityController.text,
+            _descriptionController.text,
+            _currentTagValue);
+        if (inventoryitem != null && _inventoryImageFile != null) {
+          await provider.updateImage(inventoryitem, _inventoryImageFile);
+        }
+      } else {
+        await provider.updateImage(widget.editItem, _inventoryImageFile);
+        await provider.updateInventory(ModelInventoryItem(
+          id: widget.editItem.id,
+          tag: _currentTagValue,
+          quantity: _quantityController.text,
+          description: _descriptionController.text,
+          shelfName: _shelfController.text,
+          title: _titleController.text,
+          createdBy: widget.editItem.createdBy,
+          createdOn: widget.editItem.createdOn,
+          imageUrl: widget.editItem.imageUrl,
+        ));
+      }
+      Navigator.of(context).pop();
+      // Navigator.of(context).pushReplacementNamed(ScreenInventory.name);s
     }
   }
 
@@ -89,10 +131,20 @@ class _ScreenAddInventoryState extends State<ScreenAddInventory> {
                     child: Column(
                       children: <Widget>[
                         TextFormField(
+                          textCapitalization: TextCapitalization.sentences,
                           controller: _titleController,
-                          decoration: InputDecoration(labelText: "Name"),
+                          decoration: InputDecoration(
+                            labelText: "Name",
+                          ),
                           textInputAction: TextInputAction.next,
                           keyboardType: TextInputType.text,
+                          validator: (value) {
+                            print("----------------->" + value);
+                            if (value.isEmpty) {
+                              return "Please don't leave me empty";
+                            }
+                            return null;
+                          },
                           onFieldSubmitted: (_) {
                             FocusScope.of(context)
                                 .requestFocus(_quantityFocusNode);
@@ -109,9 +161,16 @@ class _ScreenAddInventoryState extends State<ScreenAddInventory> {
                             FocusScope.of(context)
                                 .requestFocus(_descriptionFocusNode);
                           },
+                          validator: (value) {
+                            if (value.isEmpty) {
+                              return "Please don't leave me empty";
+                            }
+                            return null;
+                          },
                           onSaved: (_) {},
                         ),
                         TextFormField(
+                          textCapitalization: TextCapitalization.sentences,
                           controller: _descriptionController,
                           decoration: InputDecoration(labelText: "Description"),
                           textInputAction: TextInputAction.next,
@@ -122,74 +181,98 @@ class _ScreenAddInventoryState extends State<ScreenAddInventory> {
                             FocusScope.of(context)
                                 .requestFocus(_shelfNameFocusNode);
                           },
+                          validator: (value) {
+                            if (value.isEmpty) {
+                              return "Please don't leave me empty";
+                            }
+                            return null;
+                          },
                           onSaved: (_) {},
                         ),
                         TextFormField(
+                          textCapitalization: TextCapitalization.sentences,
                           controller: _shelfController,
                           decoration: InputDecoration(labelText: "Shelf Name"),
                           textInputAction: TextInputAction.done,
                           focusNode: _shelfNameFocusNode,
                           keyboardType: TextInputType.text,
+                          validator: (value) {
+                            if (value.isEmpty) {
+                              return "Please don't leave me empty";
+                            }
+                            return null;
+                          },
                           onFieldSubmitted: (_) {
-                            showDialog(
-                                context: context,
-                                child: AlertDialog(
-                                  actions: <Widget>[
-                                    RaisedButton(
-                                      child: Text("OK"),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                    ),
-                                  ],
-                                ));
+                            FocusScope.of(context).unfocus();
                           },
                           onSaved: (_) {},
                         ),
                         SizedBox(
                           height: 10.0,
                         ),
+                        DropdownButtonFormField(
+                          items: [
+                            DropdownMenuItem(
+                              child: Text("Generic"),
+                              value: "Generic",
+                            ),
+                            DropdownMenuItem(
+                              child: Text("Garage"),
+                              value: "Garage",
+                            ),
+                            DropdownMenuItem(
+                              child: Text("Kitchen"),
+                              value: "Kitchen",
+                            ),
+                            DropdownMenuItem(
+                              child: Text("Bed Room"),
+                              value: "Bed Room",
+                            ),
+                            DropdownMenuItem(
+                              child: Text("Living Room"),
+                              value: "Living Room",
+                            ),
+                            DropdownMenuItem(
+                              child: Text("Office"),
+                              value: "Office",
+                            ),
+                            DropdownMenuItem(
+                              child: Text("Kitchen Office"),
+                              value: "Kitchen Office",
+                            ),
+                            DropdownMenuItem(
+                              child: Text("Basement"),
+                              value: "Basement",
+                            ),
+                            DropdownMenuItem(
+                              child: Text("Laundry Room"),
+                              value: "Laundry Room",
+                            ),
+                            DropdownMenuItem(
+                              child: Text("Miscelleneous"),
+                              value: "Miscelleneous",
+                            ),
+                          ],
+                          value: _currentTagValue,
+                          onChanged: (value) {
+                            setState(() {
+                              _currentTagValue = value;
+                            });
+                          },
+                        ),
+                         SizedBox(
+                          height: 10.0,
+                        ),
                         InventoryImagePicker(_pickImage, _imageUrl),
                         Center(
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: RaisedButton(
-                              child: Text("Submit"),
-                              onPressed: () async {
-                                if (widget.editItem == null) {
-                                  var inventoryitem =
-                                      await Provider.of<ProviderInventory>(
-                                              context,
-                                              listen: false)
-                                          .addInventory(
-                                              _titleController.text,
-                                              _shelfController.text,
-                                              _quantityController.text,
-                                              _descriptionController.text);
-                                  if (inventoryitem != null &&
-                                      _inventoryImageFile != null) {
-                                    await _updateImage(inventoryitem);
-                                  }
-                                } else {
-                                  await _updateImage(widget.editItem);
-                                  await Provider.of<ProviderInventory>(context,
-                                          listen: false)
-                                      .updateInventory(ModelInventoryItem(
-                                    id: widget.editItem.id,
-                                    quantity: _quantityController.text,
-                                    description: _descriptionController.text,
-                                    shelfName: _shelfController.text,
-                                    title: _titleController.text,
-                                    createdBy: widget.editItem.createdBy,
-                                    createdOn: widget.editItem.createdOn,
-                                    imageUrl: widget.editItem.imageUrl,
-                                  ));
-                                }
-
-                                Navigator.of(context)
-                                    .pushReplacementNamed(ScreenInventory.name);
-                              },
-                            ),
+                            child: _isSubmitting
+                                ? CircularProgressIndicator()
+                                : RaisedButton(
+                                    child: Text("Submit"),
+                                    onPressed: _submitForm,
+                                  ),
                           ),
                         )
                       ],

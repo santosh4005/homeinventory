@@ -8,6 +8,7 @@ class ModelInventoryItem {
   final String shelfName;
   final DateTime createdOn;
   final String createdBy;
+  final String tag;
   String imageUrl;
 
   ModelInventoryItem({
@@ -16,6 +17,7 @@ class ModelInventoryItem {
     @required this.description,
     @required this.quantity,
     @required this.shelfName,
+    @required this.tag,
     this.createdBy,
     this.createdOn,
     this.imageUrl,

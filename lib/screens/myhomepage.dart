@@ -1,9 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:home_inventory/models/inventoryitem.dart';
 import 'package:home_inventory/providers/inventoryprovider.dart';
-import 'package:home_inventory/screens/addinventory.dart';
 import 'package:home_inventory/screens/inventory.dart';
 import 'package:provider/provider.dart';
+import '../widgets/maindrawer.dart';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
@@ -15,8 +15,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  List<ModelInventoryItem> inventoryItems = [];
+
   @override
   Widget build(BuildContext context) {
+    inventoryItems = Provider.of<ProviderInventory>(context).items;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -24,26 +28,7 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      drawer: Drawer(
-        child: Column(
-          children: <Widget>[
-            AppBar(
-              title: Text("Menu"),
-              automaticallyImplyLeading: false,
-            ),
-            ListTile(
-              leading: CircleAvatar(
-                child: Icon(Icons.supervised_user_circle),
-              ),
-              title: Text("Logout"),
-              onTap: () {
-                Navigator.of(context).pop();
-                FirebaseAuth.instance.signOut();
-              },
-            )
-          ],
-        ),
-      ),
+      drawer: MainDrawer(),
       body: Container(
         decoration: BoxDecoration(
             gradient: LinearGradient(colors: [
@@ -52,48 +37,135 @@ class _MyHomePageState extends State<MyHomePage> {
         ], begin: Alignment.topRight, end: Alignment.bottomLeft)),
         child: SafeArea(
           child: Padding(
-            padding: EdgeInsets.all(20.0),
-            child: GridView(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  childAspectRatio: 3 / 2,
-                  crossAxisSpacing: 10.0,
-                  mainAxisSpacing: 10.0),
+            padding: EdgeInsets.symmetric(horizontal: 20.0),
+            child: ListView(
               children: <Widget>[
-                InkWell(
-                  child: Container(
-                    color: Colors.grey,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Icon(Icons.list),
-                        Text("My Inventory!"),
-                      ],
+                _getCard(
+                    name: "Full Inventory",
+                    smallDescription: "Everything",
+                    icon: Icon(
+                      Icons.playlist_add,
+                      size: 70,
                     ),
+                    tag: ""),
+                _getCard(
+                  name: "Garage Inventory",
+                  smallDescription: "Everything from Garage",
+                  tag: "Garage",
+                  icon: Icon(
+                    Icons.directions_car,
+                    size: 70,
                   ),
-                  onTap: () {
-                    Navigator.of(context).pushNamed(ScreenInventory.name);
-                  },
                 ),
+                _getCard(
+                    icon: Icon(
+                      Icons.local_dining,
+                      size: 70,
+                    ),
+                    name: "Kitchen Inventory",
+                    smallDescription: "Everything from Kitchen",
+                    tag: "Kitchen"),
+                _getCard(
+                    icon: Icon(
+                      Icons.work,
+                      size: 70,
+                    ),
+                    name: "Office Inventory",
+                    smallDescription: "Everything from Office",
+                    tag: "Office"),
+                _getCard(
+                    icon: Icon(
+                      Icons.airline_seat_individual_suite,
+                      size: 70,
+                    ),
+                    name: "Bed Room Inventory",
+                    smallDescription: "Everything from Bed Room",
+                    tag: "Bed Room"),
+                _getCard(
+                    icon: Icon(
+                      Icons.home,
+                      size: 70,
+                    ),
+                    name: "Basement Inventory",
+                    smallDescription: "Everything from Basement",
+                    tag: "Basement"),
+                _getCard(
+                    icon: Icon(
+                      Icons.tv,
+                      size: 70,
+                    ),
+                    name: "Living Room Inventory",
+                    smallDescription: "Everything from Living Room",
+                    tag: "Living Room"),
+                _getCard(
+                    icon: Icon(
+                      Icons.restaurant,
+                      size: 70,
+                    ),
+                    name: "Kitchen Office Inventory",
+                    smallDescription: "Everything from Kitchen Office",
+                    tag: "Kitchen Office"),
+                _getCard(
+                    icon: Icon(
+                      Icons.assignment,
+                      size: 70,
+                    ),
+                    name: "Miscelleneous Inventory",
+                    smallDescription: "Everything Miscelleneous",
+                    tag: "Miscelleneous"),
               ],
             ),
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => {
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) {
-              return ScreenAddInventory(
-                editItem: null,
-                isEditMode: false,
+    );
+  }
+
+  Widget _getCard(
+      {String name, String smallDescription, String tag, Icon icon}) {
+    var totalTagItems = [];
+    if (tag == "") {
+      totalTagItems = inventoryItems;
+    } else {
+      totalTagItems =
+          inventoryItems.where((element) => element.tag == tag).toList();
+    }
+
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0),
+      ),
+      color: Theme.of(context).primaryColor,
+      elevation: 10,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          ListTile(
+            trailing: totalTagItems.length > 0
+                ? Text(
+                    totalTagItems.length.toString(),
+                    style: TextStyle(
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  )
+                : null,
+            leading: icon,
+            title: Text(name, style: TextStyle(color: Colors.white)),
+            subtitle:
+                Text(smallDescription, style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => ScreenInventory(tag),
+                ),
               );
             },
-          ))
-        },
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
+          ),
+          SizedBox(
+            height: 10.0,
+          )
+        ],
       ),
     );
   }

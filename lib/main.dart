@@ -13,18 +13,17 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  final primaryColor =Colors.deepPurple;
+  final primaryColor = Colors.deepPurple;
   final accentColor = Colors.white;
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [        
-        ChangeNotifierProvider.value(value: ProviderInventory())],
+      providers: [ChangeNotifierProvider.value(value: ProviderInventory())],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Home Inventory',
-        theme: ThemeData(  
+        theme: ThemeData(
           primarySwatch: primaryColor,
           backgroundColor: primaryColor,
           accentColor: accentColor,
@@ -54,11 +53,11 @@ class MyApp extends StatelessWidget {
             }
           },
         ),
-        routes: {
-          // "/": (ctx) => MyHomePage(title: 'Home Inventory'),
-          ScreenInventory.name: (ctx) => ScreenInventory(),
-          ScreenAddInventory.name: (ctx) => ScreenAddInventory()
-        },
+        // routes: {
+        //   // "/": (ctx) => MyHomePage(title: 'Home Inventory'),
+        //   ScreenInventory.name: (ctx) => ScreenInventory("All"),
+        //   ScreenAddInventory.name: (ctx) => ScreenAddInventory()
+        // },
       ),
     );
   }
