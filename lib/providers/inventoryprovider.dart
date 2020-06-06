@@ -5,9 +5,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:home_inventory/models/inventoryitem.dart';
+import 'package:home_inventory/models/user.dart';
 
 class ProviderInventory with ChangeNotifier {
   List<ModelInventoryItem> _items = [];
+  UserData _userData;
 
   List<ModelInventoryItem> get items {
     return [..._items];
@@ -40,6 +42,23 @@ class ProviderInventory with ChangeNotifier {
             createdOn: (element.data["createdOn"] as Timestamp).toDate()));
       });
       notifyListeners();
+    }
+  }
+
+  Future<UserData> fetchUserDetails() async {
+    if (_userData == null) {
+      var loggedInUser = await FirebaseAuth.instance.currentUser();
+      var currentUserDetials = await Firestore.instance
+          .collection("users")
+          .document(loggedInUser.uid)
+          .get();
+
+      _userData = UserData(
+          imageurl: currentUserDetials.data['imageurl'],
+          name: currentUserDetials.data['username'],
+          uid: loggedInUser.uid);
+
+      return _userData;
     }
   }
 

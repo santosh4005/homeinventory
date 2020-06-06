@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:home_inventory/models/inventoryitem.dart';
 import 'package:home_inventory/providers/inventoryprovider.dart';
 import 'package:home_inventory/screens/addinventory.dart';
-import 'package:home_inventory/screens/inventoryitem.dart';
 import 'package:provider/provider.dart';
 
 class ScreenInventory extends StatefulWidget {
@@ -64,6 +63,8 @@ class _ScreenInventoryState extends State<ScreenInventory> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.white,
+        foregroundColor: Theme.of(context).primaryColor,
         onPressed: () => {
           Navigator.of(context).push(MaterialPageRoute(
             builder: (context) {
@@ -82,13 +83,16 @@ class _ScreenInventoryState extends State<ScreenInventory> {
         decoration: BoxDecoration(
             gradient: LinearGradient(colors: [
           Theme.of(context).primaryColor,
-          Colors.white,
+          Theme.of(context).accentColor,
         ], begin: Alignment.topRight, end: Alignment.bottomLeft)),
         child: SafeArea(
           child: _isLoading
-              ? Center(child: CircularProgressIndicator())
+              ? Center(
+                  child: CircularProgressIndicator(
+                  backgroundColor: Colors.white,
+                ))
               : RefreshIndicator(
-                  backgroundColor: Theme.of(context).primaryColor,
+                  backgroundColor: Colors.white,
                   onRefresh: () =>
                       provider.fetchAndSetInventory(hardrefresh: true),
                   child: ListView.separated(
@@ -99,22 +103,25 @@ class _ScreenInventoryState extends State<ScreenInventory> {
                               child: AlertDialog(
                                 actions: <Widget>[
                                   RaisedButton(
-                                    child: Text("Cancel"),
+                                    child: Text("Nah"),
+                                    color: Theme.of(context).primaryColor,
                                     onPressed: () =>
                                         Navigator.of(context).pop(false),
                                   ),
                                   RaisedButton(
-                                    child: Text("OK"),
+                                    child: Text("Yeah"),
+                                    color: Colors.red,
                                     onPressed: () =>
                                         Navigator.of(context).pop(true),
                                   )
                                 ],
                                 title: Text("Hmmm...."),
+                                content: Text("You sure bud?"),
                               )),
                           direction: DismissDirection.endToStart,
                           key: ValueKey(itemsList[index].id),
-                          onDismissed: (direction) {
-                            provider.removeItemFromInventory(index);
+                          onDismissed: (direction) async {
+                            await provider.removeItemFromInventory(index);
                             Scaffold.of(ctx).hideCurrentSnackBar();
                             Scaffold.of(ctx).showSnackBar(SnackBar(
                               content: Text(
@@ -139,12 +146,23 @@ class _ScreenInventoryState extends State<ScreenInventory> {
                                     backgroundImage:
                                         NetworkImage(itemsList[index].imageUrl),
                                   ),
-                            title: Text(itemsList[index].title),
-                            subtitle: Text(itemsList[index].tag +
-                                ": " +
-                                itemsList[index].shelfName),
-                            trailing:
-                                Text(itemsList[index].quantity.toString()),
+                            title: Text(
+                              itemsList[index].title,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Text(
+                                itemsList[index].tag +
+                                    ": " +
+                                    itemsList[index].shelfName,
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontStyle: FontStyle.italic)),
+                            trailing: Text(itemsList[index].quantity.toString(),
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 20)),
                             onTap: () {
                               Navigator.of(context)
                                   .push(MaterialPageRoute(builder: (ctx) {
@@ -153,10 +171,6 @@ class _ScreenInventoryState extends State<ScreenInventory> {
                                   editItem: itemsList[index],
                                   isEditMode: true,
                                 );
-
-                                // return ScreenInventoryItem(
-                                //   modelInventoryItem: itemsList[index],
-                                // );
                               }));
                             },
                           ),
@@ -245,9 +259,12 @@ class DataSerach extends SearchDelegate<ModelInventoryItem> {
               suggestionList[index].quantity.toString(),
             ),
             onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (ctx) {
-                return ScreenInventoryItem(
-                  modelInventoryItem: suggestionList[index],
+              Navigator.of(context)
+                  .pushReplacement(MaterialPageRoute(builder: (ctx) {
+                return ScreenAddInventory(
+                  tagValue: suggestionList[index].tag,
+                  editItem: suggestionList[index],
+                  isEditMode: true,
                 );
               }));
             },

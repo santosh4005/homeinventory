@@ -13,8 +13,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  final primaryColor = Colors.deepPurple;
-  final accentColor = Colors.white;
+  final primaryColor = Colors.purple;
+  final accentColor = Colors.pink;
 
   @override
   Widget build(BuildContext context) {
@@ -26,10 +26,11 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: primaryColor,
           backgroundColor: primaryColor,
+          errorColor: Colors.white,
           accentColor: accentColor,
           // accentColorBrightness: Brightness.dark,
           buttonTheme: ButtonTheme.of(context).copyWith(
-            buttonColor: primaryColor,
+            buttonColor: Colors.white,
             textTheme: ButtonTextTheme.primary,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20.0),

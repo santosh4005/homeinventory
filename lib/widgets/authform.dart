@@ -167,6 +167,8 @@ class _AuthFormState extends State<AuthForm>
                     ),
                   if (!widget.isLoading)
                     RaisedButton(
+                      color: Theme.of(context).primaryColor,
+                      textColor: Colors.white,
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         onPressed: _submitForm,
                         child: Text(_isLogin ? "Login" : "Sign Up")),
@@ -209,14 +211,14 @@ class _AuthFormState extends State<AuthForm>
     final isValid = _formKey.currentState.validate();
     FocusScope.of(context).unfocus();
 
-    if (_userImageFile == null && !_isLogin) {
-      Scaffold.of(context).hideCurrentSnackBar();
-      Scaffold.of(context).showSnackBar(SnackBar(
-        content: Text("Please pick an image"),
-        backgroundColor: Theme.of(context).errorColor,
-      ));
-      return;
-    }
+    // if (_userImageFile == null && !_isLogin) {
+    //   Scaffold.of(context).hideCurrentSnackBar();
+    //   Scaffold.of(context).showSnackBar(SnackBar(
+    //     content: Text("Please pick an image"),
+    //     backgroundColor: Theme.of(context).errorColor,
+    //   ));
+    //   return;
+    // }
 
     if (isValid) {
       _formKey.currentState.save();

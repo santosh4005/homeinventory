@@ -117,10 +117,10 @@ class _ScreenAddInventoryState extends State<ScreenAddInventory> {
       body: Container(
         padding: EdgeInsets.all(10.0),
         decoration: BoxDecoration(
-            gradient: LinearGradient(
-                colors: [Theme.of(context).primaryColor, Colors.white],
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft)),
+            gradient: LinearGradient(colors: [
+          Theme.of(context).primaryColor,
+          Theme.of(context).accentColor
+        ], begin: Alignment.topRight, end: Alignment.bottomLeft)),
         child: SafeArea(
           child: Column(
             children: <Widget>[
@@ -133,15 +133,18 @@ class _ScreenAddInventoryState extends State<ScreenAddInventory> {
                         TextFormField(
                           textCapitalization: TextCapitalization.sentences,
                           controller: _titleController,
+                          style: TextStyle(color: Colors.white),
                           decoration: InputDecoration(
-                            labelText: "Name",
-                          ),
+                              labelText: "Name",
+                              labelStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontStyle: FontStyle.italic)),
                           textInputAction: TextInputAction.next,
                           keyboardType: TextInputType.text,
                           validator: (value) {
                             print("----------------->" + value);
                             if (value.isEmpty) {
-                              return "Please don't leave me empty";
+                              return "* Please don't leave me empty";
                             }
                             return null;
                           },
@@ -152,8 +155,13 @@ class _ScreenAddInventoryState extends State<ScreenAddInventory> {
                           onSaved: (_) {},
                         ),
                         TextFormField(
+                          style: TextStyle(color: Colors.white),
                           controller: _quantityController,
-                          decoration: InputDecoration(labelText: "Quantity"),
+                          decoration: InputDecoration(
+                              labelText: "Quantity",
+                              labelStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontStyle: FontStyle.italic)),
                           textInputAction: TextInputAction.next,
                           focusNode: _quantityFocusNode,
                           keyboardType: TextInputType.number,
@@ -163,16 +171,21 @@ class _ScreenAddInventoryState extends State<ScreenAddInventory> {
                           },
                           validator: (value) {
                             if (value.isEmpty) {
-                              return "Please don't leave me empty";
+                              return "* Please don't leave me empty";
                             }
                             return null;
                           },
                           onSaved: (_) {},
                         ),
                         TextFormField(
+                          style: TextStyle(color: Colors.white),
                           textCapitalization: TextCapitalization.sentences,
                           controller: _descriptionController,
-                          decoration: InputDecoration(labelText: "Description"),
+                          decoration: InputDecoration(
+                              labelText: "Description",
+                              labelStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontStyle: FontStyle.italic)),
                           textInputAction: TextInputAction.next,
                           focusNode: _descriptionFocusNode,
                           keyboardType: TextInputType.multiline,
@@ -183,22 +196,27 @@ class _ScreenAddInventoryState extends State<ScreenAddInventory> {
                           },
                           validator: (value) {
                             if (value.isEmpty) {
-                              return "Please don't leave me empty";
+                              return "* Please don't leave me empty";
                             }
                             return null;
                           },
                           onSaved: (_) {},
                         ),
                         TextFormField(
+                          style: TextStyle(color: Colors.white),
                           textCapitalization: TextCapitalization.sentences,
                           controller: _shelfController,
-                          decoration: InputDecoration(labelText: "Shelf Name"),
+                          decoration: InputDecoration(
+                              labelText: "Shelf Name",
+                              labelStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontStyle: FontStyle.italic)),
                           textInputAction: TextInputAction.done,
                           focusNode: _shelfNameFocusNode,
                           keyboardType: TextInputType.text,
                           validator: (value) {
                             if (value.isEmpty) {
-                              return "Please don't leave me empty";
+                              return "* Please don't leave me empty";
                             }
                             return null;
                           },
@@ -210,57 +228,22 @@ class _ScreenAddInventoryState extends State<ScreenAddInventory> {
                         SizedBox(
                           height: 10.0,
                         ),
-                        DropdownButtonFormField(
-                          items: [
-                            DropdownMenuItem(
-                              child: Text("Generic"),
-                              value: "Generic",
-                            ),
-                            DropdownMenuItem(
-                              child: Text("Garage"),
-                              value: "Garage",
-                            ),
-                            DropdownMenuItem(
-                              child: Text("Kitchen"),
-                              value: "Kitchen",
-                            ),
-                            DropdownMenuItem(
-                              child: Text("Bed Room"),
-                              value: "Bed Room",
-                            ),
-                            DropdownMenuItem(
-                              child: Text("Living Room"),
-                              value: "Living Room",
-                            ),
-                            DropdownMenuItem(
-                              child: Text("Office"),
-                              value: "Office",
-                            ),
-                            DropdownMenuItem(
-                              child: Text("Kitchen Office"),
-                              value: "Kitchen Office",
-                            ),
-                            DropdownMenuItem(
-                              child: Text("Basement"),
-                              value: "Basement",
-                            ),
-                            DropdownMenuItem(
-                              child: Text("Laundry Room"),
-                              value: "Laundry Room",
-                            ),
-                            DropdownMenuItem(
-                              child: Text("Miscelleneous"),
-                              value: "Miscelleneous",
-                            ),
-                          ],
-                          value: _currentTagValue,
-                          onChanged: (value) {
-                            setState(() {
-                              _currentTagValue = value;
-                            });
-                          },
+                        Theme(
+                          data: Theme.of(context).copyWith(
+                            canvasColor: Theme.of(context).primaryColor,
+                          ),
+                          child: DropdownButtonFormField(
+                            style: TextStyle(color: Colors.white),
+                            items: _getDropdownList(),
+                            value: _currentTagValue,
+                            onChanged: (value) {
+                              setState(() {
+                                _currentTagValue = value;
+                              });
+                            },
+                          ),
                         ),
-                         SizedBox(
+                        SizedBox(
                           height: 10.0,
                         ),
                         InventoryImagePicker(_pickImage, _imageUrl),
@@ -285,5 +268,26 @@ class _ScreenAddInventoryState extends State<ScreenAddInventory> {
         ),
       ),
     );
+  }
+
+  List<DropdownMenuItem> _getDropdownList() {
+    final tagOptions = [
+      "Basement",
+      "Bed Room",
+      "Generic",
+      "Garage",
+      "Kitchen",
+      "Kitchen Office",
+      "Laundry Room",
+      "Living Room",
+      "Miscelleneous",
+      "Office",
+    ];
+    return tagOptions
+        .map((e) => DropdownMenuItem(
+              child: Text(e),
+              value: e,
+            ))
+        .toList();
   }
 }

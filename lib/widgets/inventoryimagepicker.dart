@@ -47,8 +47,14 @@ class _InventoryImagePickerState extends State<InventoryImagePicker> {
         FlatButton.icon(
           textColor: Theme.of(context).primaryColor,
           onPressed: _pickImage,
-          icon: Icon(Icons.image),
-          label: Text("Add Image"),
+          icon: Icon(
+            Icons.image,
+            color: Colors.white,
+          ),
+          label: Text(
+            "Add Image",
+            style: TextStyle(color: Colors.white),
+          ),
         ),
       ],
     );

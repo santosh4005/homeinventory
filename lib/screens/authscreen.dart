@@ -23,8 +23,8 @@ class _AuthScreenState extends State<AuthScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Theme.of(context).primaryColor, 
-              Colors.white,
+              Theme.of(context).primaryColor,
+              Theme.of(context).accentColor,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -60,8 +60,11 @@ class _AuthScreenState extends State<AuthScreen> {
             .child('user_image')
             .child(authresult.user.uid + '.jpg');
 
-        await imgRef.putFile(userimagefile).onComplete;
-        final imageurl = await imgRef.getDownloadURL();
+        var imageurl = "";
+        if (userimagefile != null) {
+          await imgRef.putFile(userimagefile).onComplete;
+          imageurl = await imgRef.getDownloadURL();
+        }
 
         await Firestore.instance
             .collection('users')
