@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:home_inventory/providers/providerGoogleSignin.dart';
+import 'package:provider/provider.dart';
 import 'dart:io';
 import './userimagepicker.dart';
 
@@ -140,7 +143,9 @@ class _AuthFormState extends State<AuthForm>
                           textInputAction: TextInputAction.next,
                           onFieldSubmitted: (value) =>
                               FocusScope.of(context).requestFocus(password),
-                          decoration: InputDecoration(labelText: "Username"),
+                          decoration: InputDecoration(
+                              labelText: "Username",
+                              errorStyle: TextStyle(color: Colors.red)),
                         ),
                       ),
                     ),
@@ -166,20 +171,43 @@ class _AuthFormState extends State<AuthForm>
                       backgroundColor: Theme.of(context).primaryColor,
                     ),
                   if (!widget.isLoading)
-                    RaisedButton(
-                      color: Theme.of(context).primaryColor,
-                      textColor: Colors.white,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          primary: Theme.of(context).primaryColor,
+                          onPrimary: Colors.white,
+                        ),
                         onPressed: _submitForm,
                         child: Text(_isLogin ? "Login" : "Sign Up")),
                   if (!widget.isLoading)
-                    FlatButton(
-                      child: Text(_isLogin
-                          ? "Create new account"
-                          : "Already have an account"),
-                      textColor: Theme.of(context).primaryColor,
-                      onPressed: _switchAuthMode,
-                    )
+                    Wrap(
+                      direction: Axis.horizontal,
+                      runSpacing: 5,
+                      children: [
+                        TextButton(
+                          child: Text(_isLogin
+                              ? "Create new account"
+                              : "Already have an account"),
+                          style: TextButton.styleFrom(
+                            primary: Theme.of(context).primaryColor,
+                          ),
+                          onPressed: _switchAuthMode,
+                        ),
+                        ElevatedButton.icon(
+                          icon: FaIcon(FontAwesomeIcons.google),
+                          label: Text("Login with google"),
+                          style: ElevatedButton.styleFrom(
+                            primary: Colors.red,
+                            shape: StadiumBorder(),
+                          ),
+                          onPressed: () {
+                            var googleprovider =
+                                Provider.of<ProviderGoogleSignin>(context,
+                                    listen: false);
+                            googleprovider.login();
+                          },
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),

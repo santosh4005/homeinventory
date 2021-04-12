@@ -99,8 +99,9 @@ class _ScreenInventoryState extends State<ScreenInventory> {
                       itemBuilder: (ctx, index) {
                         return Dismissible(
                           confirmDismiss: (direction) => showDialog(
-                              context: ctx,
-                              child: AlertDialog(
+                            context: ctx,
+                            builder: (context) {
+                              return AlertDialog(
                                 actions: <Widget>[
                                   RaisedButton(
                                     child: Text("Nah"),
@@ -117,13 +118,15 @@ class _ScreenInventoryState extends State<ScreenInventory> {
                                 ],
                                 title: Text("Hmmm...."),
                                 content: Text("You sure bud?"),
-                              )),
+                              );
+                            },
+                          ),
                           direction: DismissDirection.endToStart,
                           key: ValueKey(itemsList[index].id),
                           onDismissed: (direction) async {
                             await provider.removeItemFromInventory(index);
-                            Scaffold.of(ctx).hideCurrentSnackBar();
-                            Scaffold.of(ctx).showSnackBar(SnackBar(
+                            ScaffoldMessenger.of(ctx).hideCurrentSnackBar();
+                            ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
                               content: Text(
                                   "Deleted ${itemsList[index].title} from the list"),
                             ));

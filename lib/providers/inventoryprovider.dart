@@ -21,25 +21,25 @@ class ProviderInventory with ChangeNotifier {
 
   Future<void> fetchAndSetInventory({bool hardrefresh = false}) async {
     if (_items.length == 0 || hardrefresh) {
-      var loggedInUser = await FirebaseAuth.instance.currentUser();
+      var loggedInUser = FirebaseAuth.instance.currentUser;
 
-      var inventory = await Firestore.instance
+      var inventory = await FirebaseFirestore.instance
           .collection("inventory")
           .where("createdBy", isEqualTo: loggedInUser.uid)
           .orderBy("createdOn", descending: true)
-          .getDocuments();
+          .get();
       _items.clear();
-      inventory.documents.forEach((element) {
+      inventory.docs.forEach((element) {
         _items.add(ModelInventoryItem(
-            tag: element.data['tag'],
-            createdBy: element.data["createdBy"],
-            description: element.data["description"],
-            id: element.documentID,
-            quantity: element.data["quantity"],
-            shelfName: element.data["shelfName"],
-            title: element.data["title"],
-            imageUrl: element.data["imageUrl"],
-            createdOn: (element.data["createdOn"] as Timestamp).toDate()));
+            tag: element.data()['tag'],
+            createdBy: element.data()["createdBy"],
+            description: element.data()["description"],
+            id: element.id,
+            quantity: element.data()["quantity"],
+            shelfName: element.data()["shelfName"],
+            title: element.data()["title"],
+            imageUrl: element.data()["imageUrl"],
+            createdOn: (element.data()["createdOn"] as Timestamp).toDate()));
       });
       notifyListeners();
     }
@@ -47,15 +47,15 @@ class ProviderInventory with ChangeNotifier {
 
   Future<UserData> fetchUserDetails() async {
     if (_userData == null) {
-      var loggedInUser = await FirebaseAuth.instance.currentUser();
-      var currentUserDetials = await Firestore.instance
+      var loggedInUser = FirebaseAuth.instance.currentUser;
+      var currentUserDetials = await FirebaseFirestore.instance
           .collection("users")
-          .document(loggedInUser.uid)
+          .doc(loggedInUser.uid)
           .get();
 
       _userData = UserData(
-          imageurl: currentUserDetials.data['imageurl'],
-          name: currentUserDetials.data['username'],
+          imageurl: currentUserDetials.data()['imageurl'],
+          name: currentUserDetials.data()['username'],
           uid: loggedInUser.uid);
 
       return _userData;
@@ -70,13 +70,13 @@ class ProviderInventory with ChangeNotifier {
           .child('inventory_image')
           .child(inventoryitem.id + '.jpg');
 
-      await imgRef.putFile(_inventoryImageFile).onComplete;
-
-      inventoryitem.imageUrl = await imgRef.getDownloadURL();
-      await Firestore.instance
+      await imgRef.putFile(_inventoryImageFile).whenComplete(() async {
+        inventoryitem.imageUrl = await imgRef.getDownloadURL();
+      });
+      await FirebaseFirestore.instance
           .collection("inventory")
-          .document(inventoryitem.id)
-          .updateData({
+          .doc(inventoryitem.id)
+          .update({
         "imageUrl": inventoryitem.imageUrl,
       });
 
@@ -89,10 +89,10 @@ class ProviderInventory with ChangeNotifier {
 
   Future<void> updateInventory(ModelInventoryItem inventoryItem) async {
     if (inventoryItem.id.isNotEmpty) {
-      await Firestore.instance
+      await FirebaseFirestore.instance
           .collection("inventory")
-          .document(inventoryItem.id)
-          .updateData({
+          .doc(inventoryItem.id)
+          .update({
         "tag": inventoryItem.tag,
         "title": inventoryItem.title,
         "shelfName": inventoryItem.shelfName,
@@ -113,11 +113,12 @@ class ProviderInventory with ChangeNotifier {
 
   Future<ModelInventoryItem> addInventory(String title, String shelfName,
       String quantity, String description, String tag) async {
-    var loggedInUser = await FirebaseAuth.instance.currentUser();
+    var loggedInUser = FirebaseAuth.instance.currentUser;
 
     var createdon = DateTime.now();
 
-    var addedInventory = await Firestore.instance.collection("inventory").add({
+    var addedInventory =
+        await FirebaseFirestore.instance.collection("inventory").add({
       "title": title,
       "shelfName": shelfName,
       "quantity": quantity,
@@ -135,7 +136,7 @@ class ProviderInventory with ChangeNotifier {
       shelfName: shelfName,
       title: title,
       createdOn: createdon,
-      id: addedInventory.documentID,
+      id: addedInventory.id,
     );
 
     _items.add(newInventoryItem);
@@ -145,7 +146,7 @@ class ProviderInventory with ChangeNotifier {
 
   Future<void> removeItemFromInventory(int index) async {
     final id = _items[index].id;
-    await Firestore.instance.collection("inventory").document(id).delete();
+    await FirebaseFirestore.instance.collection("inventory").doc(id).delete();
     if (_items[index].imageUrl != null && _items[index].imageUrl.isNotEmpty)
       await FirebaseStorage.instance
           .ref()

@@ -59,9 +59,10 @@ class _ScreenAddInventoryState extends State<ScreenAddInventory> {
           .child('inventory_image')
           .child(inventoryitem.id + '.jpg');
 
-      await imgRef.putFile(_inventoryImageFile).onComplete;
+      await imgRef.putFile(_inventoryImageFile).whenComplete(() async {
+        inventoryitem.imageUrl = await imgRef.getDownloadURL();
+      });
 
-      inventoryitem.imageUrl = await imgRef.getDownloadURL();
       await Provider.of<ProviderInventory>(context, listen: false)
           .updateInventory(inventoryitem);
     }
